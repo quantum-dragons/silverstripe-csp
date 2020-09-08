@@ -9,6 +9,7 @@ use SilverStripe\Versioned\Versioned;
 use SilverStripe\Admin\LeftAndMain;
 use SilverStripe\CMS\Controllers\ContentController;
 use SilverStripe\CMS\Controllers\ModelAsController;
+use SilverStripe\CMS\Model\SiteTree;
 
 /**
  * Provides an extension method so that the Controller can set the relevant CSP header
@@ -81,7 +82,12 @@ class ControllerExtension extends Extension {
     $policy = Policy::getDefaultBasePolicy($is_live, Policy::POLICY_DELIVERY_METHOD_HEADER);
 
     // check for Page specific policies
-    if($this->owner instanceof ContentController && ($data = $this->owner->data())) {
+    // RULE: Ensure data is of instance of SiteTree - avoid other types i.e. ElementForm
+    if (
+      $this->owner instanceof ContentController && 
+      $this->owner->data() instanceof SiteTree && 
+      ($data = $this->owner->data())
+      ) {
       $page_policy = Policy::getPagePolicy($data, $is_live, Policy::POLICY_DELIVERY_METHOD_HEADER);
       if(!empty($page_policy->ID)) {
         if(!empty($policy->ID)) {
